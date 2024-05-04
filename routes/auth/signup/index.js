@@ -1,51 +1,48 @@
-const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
-const { SECRET } = require("../../../config");
-const { insertNewDocument, findOne } = require("../../../helpers");
-const Joi = require("joi");
-const { send_email } = require("../../../lib");
-const schema = Joi.object({
-  first_name: Joi.string().required(),
-  last_name: Joi.string().required(),
-  username: Joi.string().required(),
-  email: Joi.string().email().required(),
-  type: Joi.string().required(),
-  status: Joi.string().required(),
-  password: Joi.string().pattern(new RegExp("^[a-zA-Z0-9]{6,30}$")),
-});
+const User=require("../../../models/userchema")
 
 const signUpUser = async (req, res) => {
-  const { email, password } = req.body;
-  try {
-    const validate = await schema.validateAsync(req.body);
+  const { name, email, password, confirmPassword,userType } = req.body;
+  // Validate request body
+  if (!name || !email || !password || !confirmPassword) {
+    return res.status(400).json({ error: 'Please fill out all required fields.' });
+  }
 
-    const check_user_exist = await findOne("user", { email });
-    if (check_user_exist) {
-      return res
-        .status(404)
-        .send({ status: 404, message: "User already exist!" });
+  // Validate password criteria
+  if (password.length < 8 || !/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+    return res.status(400).json({
+      error: 'Password must be at least 8 characters long and contain a special character.',
+    });
+  }
+
+  // Check if passwords match
+  if (password !== confirmPassword) {
+    return res.status(400).json({ error: 'Passwords do not match.' });
+  }
+
+  
+  try {
+
+    const existingUser = await User.findOne({ email });
+
+    if (existingUser) {
+      return res.status(409).json({ error: 'Email address is already registered.' });
     }
 
-    const new_user = {
-      ...req.body,
-      password: bcrypt.hashSync(password, bcrypt.genSaltSync(10)),
-    };
-    const user = await insertNewDocument("user", new_user);
-    let token = jwt.sign({ id: new_user._id }, SECRET);
-    user.password = undefined;
-    send_email(
-      "registration-email",
-      {
-        username: user.first_name,
-        location: "test",
-      },
-      "Health Titan Pro",
-      "Awaiting Admin Approval",
-      user.email
-    );
-    return res.status(200).send({ status: 200, user, token });
-  } catch (e) {
-    return res.status(400).send({ status: 400, message: e.message });
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const newUser = new User({
+      name,
+      email,
+      password: hashedPassword,
+      userType: userType, // Default user type, you can modify this based on your requirement
+    });
+
+    await newUser.save();
+    return res.status(201).json({ message: 'User signed up successfully.' });
+  } catch (error) {
+    console.error("Error adding new User:", error);
+    return res.status(500).json({ error: 'Error adding new User.' });
   }
 };
 

@@ -3,7 +3,9 @@ const bodyParser = require("body-parser");
 const mongoose = require("./config/db");
 const morgan = require("morgan");
 const cors = require("cors");
-const routes = require("./routes");
+const signUpRoutes = require("./routes/auth/signup");
+const loginRoutes = require("./routes/auth/login");
+
 const app = express();
 
 // * Database connection
@@ -21,8 +23,11 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(morgan("short"));
 
-// * Api routes
-app.use("/api", routes);
+
+
+app.use('/signup', signUpRoutes);
+app.use('/login', loginRoutes);
+
 
 app.get("/", (req, res) => {
   console.log("hello");
@@ -33,6 +38,6 @@ app.use("*", (req, res) => {
   res.send("Route not found");
 });
 
-let PORT = process.env.PORT || 3000;
+let PORT = process.env.PORT || 8080;
 
 app.listen(PORT, () => console.log(`Server is running on PORT ${PORT}`));
