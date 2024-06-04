@@ -5,6 +5,8 @@ const morgan = require("morgan");
 const cors = require("cors");
 const signUpRoutes = require("./routes/auth/signup");
 const loginRoutes = require("./routes/auth/login");
+const vehicleRoutes = require("./routes/auth/vehicle")
+const userRoutes = require("./routes/user");
 
 const app = express();
 
@@ -27,6 +29,9 @@ app.use(morgan("short"));
 
 app.use('/signup', signUpRoutes);
 app.use('/login', loginRoutes);
+app.use('/vehicle', vehicleRoutes);
+app.use('/user', userRoutes);
+
 
 
 app.get("/", (req, res) => {

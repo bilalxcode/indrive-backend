@@ -20,6 +20,19 @@ const userSchema = new Schema({
     type: String,
     enum: ['user', 'mechanic', 'driver'],
     default: 'user'
+  },
+  active: {
+    type: Boolean,
+    default: false
+  },
+  expertise: {
+    type: String,
+  },
+  experience: {
+    type: String, // You can adjust this according to your needs (e.g., Number for years)
+  },
+  contactNumber: {
+    type: String,
   }
 });
 
