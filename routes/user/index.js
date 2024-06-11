@@ -52,4 +52,43 @@ router.post('/add-mechanic', async (req, res) => {
     }
   });
 
+  router.get('/:userId', async (req, res) => {
+    try {
+      const userId = req.params.userId;
+      console.log("Request received with ", userId)
+  
+      const user = await User.findById(userId).lean(); 
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+      res.json(user);
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+  router.put('/save-phone-number', async (req, res) => {
+    const { userId, contactNumber } = req.body;
+  
+    try {
+      // Find the user by ID
+      const user = await User.findById(userId);
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+  
+      // Update the contact number
+      user.contactNumber = contactNumber;
+      
+      // Save the updated user
+      await user.save();
+  
+      // Respond with the updated user data
+      res.json(user);
+    } catch (error) {
+      console.error('Error updating contact number:', error);
+      res.status(500).json({ error: 'Failed to update contact number' });
+    }
+  });
+  
 module.exports = router;
