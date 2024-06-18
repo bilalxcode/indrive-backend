@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-// Define the user schema
 const userSchema = new Schema({
   name: {
     type: String,
@@ -25,18 +24,13 @@ const userSchema = new Schema({
     type: Boolean,
     default: false
   },
-  expertise: {
-    type: String,
-  },
-  experience: {
-    type: String, // You can adjust this according to your needs (e.g., Number for years)
-  },
-  contactNumber: {
-    type: String,
-  }
+  expertise: String,
+  experience: String,
+  contactNumber: String,
+  latitude: Number,
+  longitude: Number,
+  vehicleId: { type: Schema.Types.ObjectId, ref: 'Vehicle' }
 });
 
-// Create a model based on the schema
 const User = mongoose.model('User', userSchema);
-
 module.exports = User;
