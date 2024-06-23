@@ -27,6 +27,7 @@ const userSchema = new Schema({
   expertise: String,
   experience: String,
   contactNumber: String,
+  otherInfo: String,
   latitude: Number,
   longitude: Number,
   vehicleId: { type: Schema.Types.ObjectId, ref: 'Vehicle' }
