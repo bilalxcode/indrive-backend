@@ -2,33 +2,6 @@ const express = require('express');
 const router = express.Router();
 const User = require('../../models/userchema'); 
 
-router.post('/toggle-active', async (req, res) => {
-  try {
-    const { userId, latitude, longitude } = req.body;
-
-    const user = await User.findById(userId);
-    
-    if (!user) {
-      return res.status(404).send({ message: 'User not found' });
-    }
-
-    user.active = !user.active;
-    if (user.active) {
-      user.latitude = latitude;
-      user.longitude = longitude;
-    } else {
-      user.latitude = null;
-      user.longitude = null;
-    }
-
-    await user.save();
-    
-    res.status(200).send({ message: `You are now ${user.active ? 'online' : 'offline'}`, user });
-  } catch (error) {
-    res.status(400).send({ error: error.message });
-  }
-});
-
 router.get('/active-drivers', async (req, res) => {
   try {
     const activeDrivers = await User.find({ active: true }).populate('vehicleId');

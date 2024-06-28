@@ -29,6 +29,7 @@ const userSchema = new Schema({
   contactNumber: String,
   latitude: Number,
   longitude: Number,
+  address: String,  
   vehicleId: { type: Schema.Types.ObjectId, ref: 'Vehicle' }
 });
 

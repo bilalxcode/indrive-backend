@@ -26,7 +26,11 @@ const DriverRequestSchema = new Schema({
     type: Number,
     default: 0 
   },
+  accepted: { type: Boolean, default: false },
+  newPriceProposed: { type: Number, default: null },
+  days: { type: Number, required: true },
+  cashPaid: { type: Boolean, default: false } // Add this field
 });
 
-const DriverRequest = mongoose.model('DriverRequest', DriverRequestSchema); // Use a different name for the model constant
+const DriverRequest = mongoose.model('DriverRequest', DriverRequestSchema);
 module.exports = DriverRequest;

@@ -14,6 +14,10 @@ const vehicleSchema = new Schema({
   licensePlate: {
     type: String,
     required: true
+  },
+  vehicleName: {  // Add this field
+    type: String,
+    required: true
   }
 });
 
