@@ -166,6 +166,7 @@ app.put('/bookingRequest/:id', async (req, res) => {
 
 app.post('/toggle-active', async (req, res) => {
   try {
+    console.log("received")
     const { userId, address, latitude, longitude } = req.body;
 
     const user = await User.findById(userId);
@@ -230,6 +231,17 @@ app.get('/locations/:userId/:driverId', async (req, res) => {
   }
 });
 
+app.get('/user/:id', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
 
 app.post('/user-location', async (req, res) => {
   try {
@@ -288,6 +300,52 @@ app.post('/getSentRequests', async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 });
+app.post('/save-location', async (req, res) => {
+  const { userId, location } = req.body;
+
+  try {
+    await User.findByIdAndUpdate(userId, { latitude: location.lat, longitude: location.lng });
+    res.status(200).json({ message: 'Location saved successfully' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error saving location' });
+  }
+});
+
+app.get('/active-mechanics', async (req, res) => {
+  try {
+    const activeMechanics = await User.find({ userType: 'mechanic', active: true });
+    res.status(200).json(activeMechanics);
+  } catch (error) {
+    res.status(500).json({ error: 'Error fetching active mechanics' });
+  }
+});
+
+app.post('/submit-request', async (req, res) => {
+  const { userId, mechanicId, problemDescription, requestDateTime } = req.body;
+
+  try {
+    // Find the mechanic by ID
+    const mechanic = await User.findById(mechanicId);
+
+    if (!mechanic) {
+      return res.status(404).json({ error: 'Mechanic not found' });
+    }
+
+    // Add the user's ID to the mechanic's requestedBy array
+    mechanic.requestedBy.push(userId);
+
+    // Save the mechanic with the updated requestedBy field
+    await mechanic.save();
+
+    // Optionally, you might want to save the request details to another collection
+
+    res.status(200).json({ message: 'Request submitted successfully' });
+  } catch (error) {
+    console.error('Error submitting request:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 
 
 app.get("/", (req, res) => {

@@ -31,7 +31,12 @@ const userSchema = new Schema({
   latitude: Number,
   longitude: Number,
   address: String,  
-  vehicleId: { type: Schema.Types.ObjectId, ref: 'Vehicle' }
+  vehicleId: { type: Schema.Types.ObjectId, ref: 'Vehicle' },
+  requestedBy: {
+    type: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+    default: []
+  }  
+
 });
 
 const User = mongoose.model('User', userSchema);
