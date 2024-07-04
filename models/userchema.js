@@ -42,7 +42,10 @@ const userSchema = new Schema({
   requestedBy: {
     type: [requestDetailsSchema],
     default: []
-  }
+  },
+  isVerified: { type: Boolean, default: false },
+
+
 });
 
 const User = mongoose.model('User', userSchema);
