@@ -1,6 +1,13 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
+// Define a sub-document schema for request details
+const requestDetailsSchema = new Schema({
+  userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+  problemDescription: { type: String, required: true },
+  requestDateTime: { type: Date, required: true }
+});
+
 const userSchema = new Schema({
   name: {
     type: String,
@@ -33,9 +40,9 @@ const userSchema = new Schema({
   address: String,  
   vehicleId: { type: Schema.Types.ObjectId, ref: 'Vehicle' },
   requestedBy: {
-    type: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+    type: [requestDetailsSchema],
     default: []
-  }  
+  }
 });
 
 const User = mongoose.model('User', userSchema);

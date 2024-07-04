@@ -8,6 +8,7 @@ const loginRoutes = require("./routes/auth/login");
 const vehicleRoutes = require("./routes/auth/vehicle")
 const userRoutes = require("./routes/user");
 const User = require('./models/userchema'); 
+const axios = require('axios');
 
 const app = express();
 
@@ -319,10 +320,8 @@ app.get('/active-mechanics', async (req, res) => {
     res.status(500).json({ error: 'Error fetching active mechanics' });
   }
 });
-
 app.post('/submit-request', async (req, res) => {
   const { userId, mechanicId, problemDescription, requestDateTime } = req.body;
-
   try {
     // Find the mechanic by ID
     const mechanic = await User.findById(mechanicId);
@@ -331,18 +330,53 @@ app.post('/submit-request', async (req, res) => {
       return res.status(404).json({ error: 'Mechanic not found' });
     }
 
-    // Add the user's ID to the mechanic's requestedBy array
-    mechanic.requestedBy.push(userId);
+    // Create a request object containing the details
+    const requestDetails = {
+      userId,
+      problemDescription,
+      requestDateTime
+    };
+
+    // Add the request details to the mechanic's requestedBy array
+    mechanic.requestedBy.push(requestDetails);
 
     // Save the mechanic with the updated requestedBy field
     await mechanic.save();
-
-    // Optionally, you might want to save the request details to another collection
 
     res.status(200).json({ message: 'Request submitted successfully' });
   } catch (error) {
     console.error('Error submitting request:', error);
     res.status(500).json({ error: 'Server error' });
+  }
+});
+
+
+app.get('/user/:userId', async (req, res) => {
+  try {
+      const userId = req.params.userId;
+      const user = await User.findById(userId);
+      if (!user) {
+          return res.status(404).json({ error: 'User not found' });
+      }
+      res.json(user);
+  } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Endpoint to get active mechanic requests with user details
+app.get('/mechanic/requests/:mechanicId', async (req, res) => {
+  try {
+      const mechanicId = req.params.mechanicId;
+      const mechanic = await User.findById(mechanicId).populate('requestedBy.userId');
+      if (!mechanic) {
+          return res.status(404).json({ error: 'Mechanic not found' });
+      }
+      res.json(mechanic.requestedBy);
+  } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Internal server error' });
   }
 });
 
