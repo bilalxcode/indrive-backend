@@ -559,6 +559,48 @@ app.get('/mechanic/requests/:mechanicId', async (req, res) => {
   }
 });
 
+app.get('/get-users', async (req, res) => {
+  try {
+    const users = await User.find({ userType: 'user' });
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+app.get('/get-mechanics', async (req, res) => {
+  try {
+    const users = await User.find({ userType: 'mechanic' });
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+app.get('/get-drivers', async (req, res) => {
+  try {
+    const users = await User.find({ userType: 'driver' });
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+app.post('/verify-user/:id', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (user) {
+      user.isVerified = true;
+      await user.save();
+      res.json({ message: 'User verified successfully' });
+    } else {
+      res.status(404).json({ message: 'User not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 
 
 app.get("/", (req, res) => {
