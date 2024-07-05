@@ -122,10 +122,11 @@ app.get('/bookingRequests/:driverId', async (req, res) => {
   }
 });
 
-app.get('/bookingRequest/status/:driverId', async (req, res) => {
+app.get('/bookingRequest/status/:id', async (req, res) => {
   try {
-    const { driverId } = req.params;
-    const booking = await DriverRequest.findOne({ driverId, accepted: true });
+    const { id } = req.params;
+    console.log(id);
+    const booking = await DriverRequest.findOne({ id, accepted: true });
 
     if (!booking) {
       return res.status(404).json({ accepted: false });
@@ -192,6 +193,17 @@ app.post('/toggle-active', async (req, res) => {
     res.status(200).send({ message: `You are now ${user.active ? 'online' : 'offline'}`, user });
   } catch (error) {
     res.status(400).send({ error: error.message });
+  }
+});
+
+app.delete('/delete-user/:id', async (req, res) => {
+  try {
+      await User.findByIdAndDelete(req.params.id);
+      await Mechanic.findByIdAndDelete(req.params.id);
+      await Driver.findByIdAndDelete(req.params.id);
+      res.send('User deleted');
+  } catch (error) {
+      res.status(500).send('Server error');
   }
 });
 
