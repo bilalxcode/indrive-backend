@@ -5,7 +5,11 @@ const Schema = mongoose.Schema;
 const requestDetailsSchema = new Schema({
   userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   problemDescription: { type: String, required: true },
-  requestDateTime: { type: Date, required: true }
+  requestDateTime: { type: Date, required: true },
+  proposedPrice: { type: Number },
+  status: { type: String, enum: ['pending', 'waiting for customer response', 'accepted', 'rejected', 'reached to customer and fixing the issue'], default: 'pending' },
+  reachedToMechanic: { type: Boolean, default: false },
+  paymentStatus: { type: Boolean, default: false }
 });
 
 const userSchema = new Schema({

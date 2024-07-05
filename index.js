@@ -350,6 +350,185 @@ app.post('/submit-request', async (req, res) => {
   }
 });
 
+app.put('/mechanic/request/:requestId/accept', async (req, res) => {
+  try {
+      const { requestId } = req.params;
+      const user = await User.findOne({ "requestedBy._id": requestId });
+      if (!user) {
+          return res.status(404).send({ error: 'Request not found' });
+      }
+
+      const request = user.requestedBy.id(requestId);
+      request.status = 'accepted';
+
+      await user.save();
+      res.status(200).send({ message: 'Request accepted successfully' });
+  } catch (error) {
+      res.status(500).send({ error: error.message });
+  }
+});
+
+app.put('/mechanic/request/:requestId/reject', async (req, res) => {
+  try {
+      const { requestId } = req.params;
+      const user = await User.findOne({ "requestedBy._id": requestId });
+      if (!user) {
+          return res.status(404).send({ error: 'Request not found' });
+      }
+
+      const request = user.requestedBy.id(requestId);
+      request.status = 'rejected';
+
+      await user.save();
+      res.status(200).send({ message: 'Request rejected successfully' });
+  } catch (error) {
+      res.status(500).send({ error: error.message });
+  }
+});
+
+app.get('/mechanic/request/:mechanicId/:userId', async (req, res) => {
+  const { mechanicId, userId } = req.params;
+
+  try {
+      const mechanic = await User.findById(mechanicId);
+
+      if (!mechanic) {
+          return res.status(404).json({ error: 'Mechanic not found' });
+      }
+
+      const request = mechanic.requestedBy.find(req => req.userId.toString() === userId);
+
+      if (!request) {
+          return res.status(404).json({ error: 'Request not found' });
+      }
+
+      res.status(200).json({ requestId: request._id });
+  } catch (error) {
+      console.error('Error fetching request ID:', error);
+      res.status(500).json({ error: 'Server error' });
+  }
+});
+
+app.put('/mechanic/request/:requestId/:id/reached', async (req, res) => {
+  try {
+    const { requestId, id } = req.params;
+    console.log("Mechanic ID:", id);
+    const user = await User.findById(id);
+    console.log("User:", user);
+
+    if (!user) {
+      return res.status(404).send({ error: 'User not found' });
+    }
+
+    const request = user.requestedBy.id(requestId);
+    console.log("Request:", request);
+
+    if (!request) {
+      return res.status(404).send({ error: 'Request not found' });
+    }
+
+    request.reachedToMechanic = true;
+    request.status = 'reached to customer and fixing the issue';
+    console.log("Updated Request:", request);
+
+    await user.save();
+    res.status(200).send({ message: 'Reached status updated successfully' });
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).send({ error: error.message });
+  }
+});
+
+app.post('/request/:requestId/payment-status', async (req, res) => {
+  const { requestId } = req.params;
+
+  try {
+    const user = await User.findOne({ "requestedBy._id": requestId });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Find the specific request within the user's requests
+    const requestIndex = user.requestedBy.findIndex(request => request._id.toString() === requestId);
+    if (requestIndex === -1) {
+      return res.status(404).json({ error: 'Request not found' });
+    }
+
+    // Remove the request from the user's requestedBy array
+    user.requestedBy.splice(requestIndex, 1);
+    
+    // Save the updated user document
+    await user.save();
+    
+    res.status(200).json({ message: 'Payment received and request removed' });
+  } catch (error) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+app.put('/mechanic/request/:requestId/confirm-payment', async (req, res) => {
+  const { requestId } = req.params;
+  console.log(requestId);
+
+  try {
+    const user = await User.findOne({ "requestedBy._id": requestId });
+
+      if (!user) {
+          return res.status(404).json({ message: 'User not found' });
+      }
+
+      const request = user.requestedBy.id(requestId);
+      request.paymentStatus = true; 
+      await user.save();
+
+      res.status(200).json({ message: 'Payment confirmed' });
+  } catch (error) {
+      console.error('Error confirming payment:', error);
+      res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+app.get('/mechanic/request/:requestId', async (req, res) => {
+  try {
+      const { requestId } = req.params;
+      const user = await User.findOne({ "requestedBy._id": requestId }).populate('requestedBy.userId');
+      if (!user) {
+          return res.status(404).send({ error: 'Request not found' });
+      }
+
+      const request = user.requestedBy.id(requestId);
+      res.status(200).send({
+          mechanicName: user.name,
+          mechanicEmail: user.email,
+          proposedPrice: request.proposedPrice,
+          status: request.status
+      });
+  } catch (error) {
+      res.status(500).send({ error: error.message });
+  }
+});
+
+app.post('/mechanic/propose-price', async (req, res) => {
+  const { requestId, proposedPrice } = req.body;
+
+  try {
+    const user = await User.findOne({ "requestedBy._id": requestId });
+    if (!user) {
+      return res.status(404).send({ error: 'Request not found' });
+    }
+
+    const request = user.requestedBy.id(requestId);
+    request.proposedPrice = proposedPrice;
+    request.status = 'waiting for customer response';
+
+    await user.save();
+
+    res.status(200).send({ message: 'Price proposed successfully' });
+  } catch (error) {
+    res.status(500).send({ error: error.message });
+  }
+});
+
 
 app.get('/user/:userId', async (req, res) => {
   try {

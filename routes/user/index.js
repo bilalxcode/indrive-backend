@@ -4,13 +4,12 @@ const User = require('../../models/userchema');
 
 router.get('/active-drivers', async (req, res) => {
   try {
-    const activeDrivers = await User.find({ active: true }).populate('vehicleId');
+    const activeDrivers = await User.find({ active: true, userType: 'driver' }).populate('vehicleId');
     res.status(200).json(activeDrivers);
   } catch (error) {
     res.status(400).send({ error: error.message });
   }
 });
-
 
 router.get('/status/:userId', async (req, res) => {
   try {
